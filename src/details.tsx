@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Detail, Icon, useNavigation } from "@raycast/api";
-import { ICreateNoteHandler, NoteContent } from "./types";
+import { ICreateNoteHandler, IDeleteNoteHandler, NoteContent } from "./types";
 import { desensitize } from "./utils";
 import { useEffect } from "react";
 import { Editor } from "./edit";
@@ -8,14 +8,12 @@ interface NewType {
   note: NoteContent;
   isDesensitize?: boolean;
   handleSubmit: ICreateNoteHandler;
+  handleDelete: IDeleteNoteHandler;
 }
 
 export function NoteDetails(props: NewType) {
   const { pop, push } = useNavigation();
-  const {
-    note: { value: oValue },
-    isDesensitize,
-  } = props;
+  const { note: { value: oValue, key } = { value: "", key: "" }, isDesensitize } = props;
 
   const value = isDesensitize ? desensitize(oValue) : oValue;
 
@@ -25,6 +23,7 @@ export function NoteDetails(props: NewType) {
 
   return (
     <Detail
+      navigationTitle={key}
       markdown={value}
       actions={
         <ActionPanel>
@@ -48,9 +47,27 @@ export function NoteDetails(props: NewType) {
           <ActionPanel.Section>
             <Action
               icon={Icon.Document}
-              title="Edit"
+              title="Edit Note"
               shortcut={{ key: "e", modifiers: ["cmd"] }}
-              onAction={() => push(<Editor note={props.note} handleSubmit={props.handleSubmit} />)}
+              onAction={() =>
+                push(<Editor note={props.note} handleSubmit={props.handleSubmit} handleDelete={props.handleDelete} />)
+              }
+            />
+            {/* <Action
+              icon={Icon.NewDocument}
+              title="New"
+              shortcut={{ key: "n", modifiers: ["cmd"] }}
+              onAction={() => push(<Editor handleSubmit={props.handleSubmit} handleDelete={props.handleDelete} />)}
+            /> */}
+            <Action
+              icon={Icon.DeleteDocument}
+              title="Delete Note"
+              shortcut={{ key: "d", modifiers: ["cmd", "shift"] }}
+              onAction={() => {
+                props.handleDelete(key);
+                pop();
+                if (!isDesensitize) pop();
+              }}
             />
           </ActionPanel.Section>
         </ActionPanel>

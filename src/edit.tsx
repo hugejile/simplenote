@@ -1,12 +1,16 @@
 import { Action, ActionPanel, Form } from "@raycast/api";
 import { useState } from "react";
-import { ICreateNoteHandler, NoteContent } from "./types";
+import { ICreateNoteHandler, IDeleteNoteHandler, NoteContent } from "./types";
 
-export function Editor(props: { note?: NoteContent; handleSubmit: ICreateNoteHandler }) {
+export function Editor(props: {
+  note?: NoteContent;
+  handleSubmit: ICreateNoteHandler;
+  handleDelete: IDeleteNoteHandler;
+}) {
   const [keyError, setKeyError] = useState<string | undefined>();
   const [valueError, setValueError] = useState<string | undefined>();
 
-  const { key, value, createTime } = props.note ?? {};
+  const { key, value } = props.note ?? {};
 
   function dropKeyErrorIfNeeded() {
     if (keyError && keyError.length > 0) {
@@ -24,7 +28,10 @@ export function Editor(props: { note?: NoteContent; handleSubmit: ICreateNoteHan
     <Form
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="Create Todo" onSubmit={props.handleSubmit} />
+          <Action.SubmitForm
+            title={key ? "Update Note" : "Create Note"}
+            onSubmit={(input) => props.handleSubmit(input as NoteContent, key)}
+          />
         </ActionPanel>
       }
     >
@@ -35,6 +42,7 @@ export function Editor(props: { note?: NoteContent; handleSubmit: ICreateNoteHan
         placeholder="Enter your key"
         error={keyError}
         onChange={dropKeyErrorIfNeeded}
+        autoFocus={!key}
         onBlur={(event) => {
           if (event.target.value?.length == 0) {
             setKeyError("The field should't be empty!");
@@ -50,6 +58,7 @@ export function Editor(props: { note?: NoteContent; handleSubmit: ICreateNoteHan
         onChange={dropValueErrorIfNeeded}
         defaultValue={value}
         placeholder="Enter your value"
+        autoFocus={!!key}
         onBlur={(event) => {
           if (event.target.value?.length == 0) {
             setValueError("The field should't be empty!");
@@ -58,7 +67,6 @@ export function Editor(props: { note?: NoteContent; handleSubmit: ICreateNoteHan
           }
         }}
       />
-      <Form.TextArea id="desc" title="Description" placeholder="Description" defaultValue={createTime?.toString()} />
     </Form>
   );
 }
