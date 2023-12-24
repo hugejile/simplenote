@@ -1,25 +1,34 @@
 import { Action, ActionPanel, Detail, Icon, useNavigation } from "@raycast/api";
 import { ICreateNoteHandler, IDeleteNoteHandler, NoteContent } from "./types";
-import { desensitize } from "./utils";
-import { useEffect } from "react";
+import { desensitize, getNoteByKey } from "./utils";
+import { useEffect, useState } from "react";
 import { Editor } from "./edit";
 
-interface NewType {
-  note: NoteContent;
+interface DetailType {
+  title: string;
   isDesensitize?: boolean;
   handleSubmit: ICreateNoteHandler;
   handleDelete: IDeleteNoteHandler;
 }
 
-export function NoteDetails(props: NewType) {
+export function NoteDetails(props: DetailType) {
   const { pop, push } = useNavigation();
-  const { note: { value: oValue, key } = { value: "", key: "" }, isDesensitize } = props;
+  const { title: key, isDesensitize } = props;
+  // const { note: { value: oValue, key } = { value: "", key: "" }, isDesensitize } = props;
 
-  const value = isDesensitize ? desensitize(oValue) : oValue;
+  const [note, setNote] = useState<NoteContent>({ key: "", value: "" });
+  const [value, setValue] = useState<string>("");
 
   useEffect(() => {
-    console.log("Detail", oValue);
+    getNote(key);
+    console.debug("PAGE MOUNT:\t", "Details");
   }, []);
+
+  async function getNote(key: string) {
+    const note = await getNoteByKey(key);
+    setNote(note);
+    setValue(isDesensitize ? desensitize(note.value) : note.value);
+  }
 
   return (
     <Detail
@@ -28,18 +37,15 @@ export function NoteDetails(props: NewType) {
       actions={
         <ActionPanel>
           <ActionPanel.Section>
-            <Action.Paste content={oValue}></Action.Paste>
-            <Action.CopyToClipboard content={oValue}></Action.CopyToClipboard>
-            {/* {isDesensitize ? <NoteDetails {...props} isDesensitize={!isDesensitize}></NoteDetails> : <></>} */}
+            <Action.Paste content={note.value}></Action.Paste>
+            <Action.CopyToClipboard content={note.value} concealed={true}></Action.CopyToClipboard>
             <Action
               title={isDesensitize ? "View Original Value" : "View Desensitize Value"}
               icon={isDesensitize ? Icon.Eye : Icon.EyeDisabled}
               shortcut={{ key: "v", modifiers: ["cmd"] }}
               onAction={() => {
-                if (isDesensitize) push(<NoteDetails {...props} isDesensitize={false}></NoteDetails>);
-                else {
-                  pop();
-                }
+                pop();
+                setTimeout(() => push(<NoteDetails {...props} isDesensitize={!isDesensitize}></NoteDetails>), 1);
               }}
             />
           </ActionPanel.Section>
@@ -50,7 +56,7 @@ export function NoteDetails(props: NewType) {
               title="Edit Note"
               shortcut={{ key: "e", modifiers: ["cmd"] }}
               onAction={() =>
-                push(<Editor note={props.note} handleSubmit={props.handleSubmit} handleDelete={props.handleDelete} />)
+                push(<Editor note={note} handleSubmit={props.handleSubmit} handleDelete={props.handleDelete} />)
               }
             />
             {/* <Action

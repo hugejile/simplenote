@@ -4,6 +4,11 @@ export class NoteContent {
   public createTime?: number = Date.now();
 }
 
+export class NoteIndex {
+  public key!: string;
+  public createTime!: number;
+}
+
 export function formatNote(note?: NoteContent) {
   if (!note) return emptyNote;
   if (!note.key) note.key = emptyNote.key;
@@ -18,7 +23,7 @@ export const emptyNote: NoteContent = {
 };
 
 export type State = {
-  notes: NoteContent[];
+  notes: NoteIndex[];
 };
 
 export interface ICreateNoteHandler {

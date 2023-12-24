@@ -1,5 +1,5 @@
-import { Action, ActionPanel, Form } from "@raycast/api";
-import { useState } from "react";
+import { Action, ActionPanel, Form, useNavigation } from "@raycast/api";
+import { useEffect, useState } from "react";
 import { ICreateNoteHandler, IDeleteNoteHandler, NoteContent } from "./types";
 
 export function Editor(props: {
@@ -9,8 +9,13 @@ export function Editor(props: {
 }) {
   const [keyError, setKeyError] = useState<string | undefined>();
   const [valueError, setValueError] = useState<string | undefined>();
-
   const { key, value } = props.note ?? {};
+
+  const { pop } = useNavigation();
+
+  useEffect(() => {
+    console.debug("PAGE MOUNT:\t", "Edit");
+  }, []);
 
   function dropKeyErrorIfNeeded() {
     if (keyError && keyError.length > 0) {
@@ -30,7 +35,10 @@ export function Editor(props: {
         <ActionPanel>
           <Action.SubmitForm
             title={key ? "Update Note" : "Create Note"}
-            onSubmit={(input) => props.handleSubmit(input as NoteContent, key)}
+            onSubmit={(input) => {
+              props.handleSubmit(input as NoteContent, key);
+              pop();
+            }}
           />
         </ActionPanel>
       }

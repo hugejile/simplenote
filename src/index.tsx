@@ -1,17 +1,10 @@
-import { ActionPanel, List, Action, LocalStorage, useNavigation, Icon } from "@raycast/api";
+import { ActionPanel, List, Action, useNavigation, Icon, Clipboard } from "@raycast/api";
 import { useCallback, useEffect, useState } from "react";
 import { NoteDetails } from "./details";
-import { NoteContent, State, formatNote } from "./types";
+import { NoteContent, State } from "./types";
 import { Editor } from "./edit";
-
-async function getItems(): Promise<NoteContent[]> {
-  const item = await LocalStorage.getItem<string>("SIMPLE_NOTE");
-  console.log(item);
-  const value = JSON.parse(item ?? "[]") as NoteContent[];
-  const notes = value.filter((x) => x.key);
-  if (notes.length > 0) return notes;
-  else return [{ key: "Create Your First Note", value: "welcome to use simple note." }];
-}
+import { getKeys as getNoteKeys, updateDateByKey as createOrUpdateNote, getNoteByKey, deleteNoteByKey } from "./utils";
+import dayjs from "dayjs";
 
 export default function Index() {
   const [state, setState] = useState<State>({
@@ -21,28 +14,18 @@ export default function Index() {
 
   useEffect(() => {
     start();
-    console.log("NOTE INDEX");
+    console.debug("PAGE MOUNT:\t", "Index");
   }, []);
 
   async function start() {
-    const notes = await getItems();
+    const notes = await getNoteKeys();
     setState((previous) => ({ ...previous, notes }));
   }
 
   const handleSubmit = useCallback(
     async (note: NoteContent, oldKey?: string) => {
-      if (!oldKey) oldKey = note.key;
-      const existNote = state.notes.find((x) => x.key == oldKey);
-      if (existNote) {
-        existNote.key = note.key;
-        existNote.value = note.value;
-        await LocalStorage.setItem("SIMPLE_NOTE", JSON.stringify(state.notes));
-        setState((previous) => ({ ...previous, notes: state.notes }));
-      } else {
-        const newNotes = [...state.notes, note];
-        setState((previous) => ({ ...previous, notes: newNotes }));
-        await LocalStorage.setItem("SIMPLE_NOTE", JSON.stringify(newNotes));
-      }
+      await createOrUpdateNote(note, oldKey);
+      start();
       pop();
     },
     [state.notes, setState],
@@ -50,8 +33,8 @@ export default function Index() {
 
   const handleDelete = useCallback(
     async (key: string) => {
+      await deleteNoteByKey(key);
       const newNotes = state.notes.filter((x) => x.key != key);
-      await LocalStorage.setItem("SIMPLE_NOTE", JSON.stringify(newNotes));
       setState((previous) => ({ ...previous, notes: newNotes }));
     },
     [state.notes, setState],
@@ -64,8 +47,8 @@ export default function Index() {
           <List.Item
             icon={Icon.BlankDocument}
             key={index}
-            title={note?.key ?? "undefined"}
-            subtitle={note?.createTime?.toString()}
+            title={note.key ?? "undefined"}
+            subtitle={dayjs(note.createTime).format("YYYY-MM-DD HH:mm:ss")}
             actions={
               <ActionPanel>
                 <ActionPanel.Section>
@@ -75,7 +58,7 @@ export default function Index() {
                     onAction={() =>
                       push(
                         <NoteDetails
-                          note={formatNote(note)}
+                          title={note.key}
                           isDesensitize={true}
                           handleSubmit={handleSubmit}
                           handleDelete={handleDelete}
@@ -83,8 +66,17 @@ export default function Index() {
                       )
                     }
                   />
-                  <Action.Paste content={note?.value}></Action.Paste>
-                  <Action.CopyToClipboard content={note?.value}></Action.CopyToClipboard>
+                  <Action
+                    title="Paste In Active App"
+                    icon={Icon.CopyClipboard}
+                    onAction={async () => {
+                      const n = await getNoteByKey(note.key);
+                      console.log("past note", n);
+                      Clipboard.paste(n.value);
+                    }}
+                  />
+                  {/* <Action.Paste content={note}></Action.Paste> */}
+                  {/* <Action.CopyToClipboard content={note?.value}></Action.CopyToClipboard> */}
                 </ActionPanel.Section>
 
                 <ActionPanel.Section>
@@ -98,7 +90,7 @@ export default function Index() {
                     icon={Icon.DeleteDocument}
                     title="Delete Note"
                     shortcut={{ key: "d", modifiers: ["cmd", "shift"] }}
-                    onAction={() => handleDelete(note?.key)}
+                    onAction={() => handleDelete(note.key)}
                   />
                 </ActionPanel.Section>
               </ActionPanel>
