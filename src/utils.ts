@@ -1,4 +1,4 @@
-import { LocalStorage } from "@raycast/api";
+import { Alert, LocalStorage, confirmAlert } from "@raycast/api";
 import { DefaultConfig, NoteContent, NoteIndex, SystemConfig } from "./types";
 
 export const CONFIG_FILE_NAME = "__CONFIG_FILE_NAME__";
@@ -9,10 +9,10 @@ export function desensitize(value: string) {
   } else if (value.length <= 2) {
     return "\\*\\*";
   } else if (value.length < 6) {
-    const s = value.replace(/(.{2}).*/, "$1" + "\\*".padEnd(value.length - 1, "*"));
+    const s = value.replace(/(.{2}).*/g, "$1" + "\\*".padEnd(value.length - 1, "*"));
     return s;
   } else {
-    const s = value.replace(/(.{2}).*(.{2})/, "$1" + "\\*".padEnd(value.length - 3, "*") + "$2");
+    const s = value.replace(/(.{2}).*(.{2})/g, "$1" + "\\*".padEnd(value.length - 3, "*") + "$2");
     return s;
   }
 }
@@ -26,6 +26,8 @@ export async function getKeys(): Promise<NoteIndex[]> {
       const i = JSON.parse((items as any)[x]) as NoteContent;
       return { key: x, createTime: i.createTime ?? 0 };
     });
+
+  // await new Promise((resolve) => setTimeout(resolve, 500));
 
   console.log(keys);
   if (keys.length > 0) return keys.sort((x, y) => y.createTime - x.createTime);
@@ -44,7 +46,7 @@ export async function getNoteByKey(key: string): Promise<NoteContent> {
   }
 }
 
-export async function updateDateByKey(note: NoteContent, oldKey?: string): Promise<NoteContent> {
+export async function createOrUpdateNote(note: NoteContent, oldKey?: string): Promise<NoteContent> {
   if (oldKey === CONFIG_FILE_NAME || note.key == CONFIG_FILE_NAME) {
     return note;
   }
@@ -56,7 +58,18 @@ export async function updateDateByKey(note: NoteContent, oldKey?: string): Promi
 
 export async function deleteNoteByKey(key: string) {
   if (key === CONFIG_FILE_NAME) return;
-  LocalStorage.removeItem(key);
+
+  const options: Alert.Options = {
+    title: "Deleting",
+    message: "Are you sure to delete?",
+    primaryAction: {
+      title: "Delete",
+      onAction: () => {
+        LocalStorage.removeItem(key);
+      },
+    },
+  };
+  await confirmAlert(options);
 }
 
 export async function getConfig(): Promise<SystemConfig> {

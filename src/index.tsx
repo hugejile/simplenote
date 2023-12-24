@@ -1,15 +1,23 @@
 import { ActionPanel, List, Action, useNavigation, Icon, Clipboard } from "@raycast/api";
 import { useCallback, useEffect, useState } from "react";
 import { NoteDetails } from "./details";
-import { NoteContent, State } from "./types";
+import { DefaultConfig, NoteContent, NoteIndex, SystemConfig } from "./types";
 import { Editor } from "./edit";
-import { getKeys as getNoteKeys, updateDateByKey as createOrUpdateNote, getNoteByKey, deleteNoteByKey } from "./utils";
+import { getKeys as getNoteKeys, getNoteByKey, deleteNoteByKey, getConfig } from "./utils";
 import dayjs from "dayjs";
 import { Configs } from "./configs";
+
+export type State = {
+  notes: NoteIndex[];
+  config: SystemConfig;
+  isLoading: boolean;
+};
 
 export default function Index() {
   const [state, setState] = useState<State>({
     notes: [],
+    config: DefaultConfig,
+    isLoading: true,
   });
   const { push, pop } = useNavigation();
 
@@ -19,30 +27,32 @@ export default function Index() {
   }, []);
 
   async function start() {
+    setState((previous) => ({ ...previous, isLoading: true }));
     const notes = await getNoteKeys();
-    setState((previous) => ({ ...previous, notes }));
+    const config = await getConfig();
+    setState((previous) => ({ ...previous, notes, config, isLoading: false }));
   }
 
-  const handleSubmit = useCallback(
+  const afterSubmit = useCallback(
     async (note: NoteContent, oldKey?: string) => {
-      await createOrUpdateNote(note, oldKey);
+      console.debug(note, oldKey);
       start();
       pop();
     },
     [state.notes, setState],
   );
 
-  const handleDelete = useCallback(
-    async (key: string) => {
-      await deleteNoteByKey(key);
-      const newNotes = state.notes.filter((x) => x.key != key);
-      setState((previous) => ({ ...previous, notes: newNotes }));
-    },
-    [state.notes, setState],
-  );
+  // const handleDelete = useCallback(
+  //   async (key: string) => {
+  //     await deleteNoteByKey(key);
+  //     const newNotes = state.notes.filter((x) => x.key != key);
+  //     setState((previous) => ({ ...previous, notes: newNotes }));
+  //   },
+  //   [state.notes, setState],
+  // );
 
   return (
-    <List>
+    <List isLoading={state.isLoading}>
       {state.notes.map((note, index) => {
         return (
           <List.Item
@@ -60,9 +70,8 @@ export default function Index() {
                       push(
                         <NoteDetails
                           title={note.key}
-                          isDesensitize={true}
-                          handleSubmit={handleSubmit}
-                          handleDelete={handleDelete}
+                          isDesensitize={state.config.desensitize}
+                          afterSubmit={afterSubmit}
                         ></NoteDetails>,
                       )
                     }
@@ -85,13 +94,21 @@ export default function Index() {
                     icon={Icon.NewDocument}
                     title="New"
                     shortcut={{ key: "n", modifiers: ["cmd"] }}
-                    onAction={() => push(<Editor handleSubmit={handleSubmit} handleDelete={handleDelete} />)}
+                    onAction={() => push(<Editor afterSubmit={afterSubmit} />)}
                   />
-                  <Action icon={Icon.DeleteDocument} title="Delete Note" onAction={() => handleDelete(note.key)} />
+                  <Action
+                    icon={Icon.DeleteDocument}
+                    title="Delete Note"
+                    shortcut={{ key: "d", modifiers: ["cmd"] }}
+                    onAction={async () => {
+                      await deleteNoteByKey(note.key);
+                      start();
+                    }}
+                  />
                   <Action.Push
-                    icon={Icon.Download}
+                    icon={Icon.Cog}
                     shortcut={{ key: "e", modifiers: ["cmd", "shift"] }}
-                    title="Export Notes"
+                    title="Configs"
                     target={<Configs />}
                   />
                 </ActionPanel.Section>
@@ -103,3 +120,5 @@ export default function Index() {
     </List>
   );
 }
+
+export { Index };

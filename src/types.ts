@@ -25,10 +25,6 @@ export const emptyNote: NoteContent = {
   value: "",
 };
 
-export type State = {
-  notes: NoteIndex[];
-};
-
 export interface ICreateNoteHandler {
   (note: NoteContent, oldKey?: string): void;
 }

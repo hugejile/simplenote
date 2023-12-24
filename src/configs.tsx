@@ -1,4 +1,14 @@
-import { ActionPanel, Form, Action, LocalStorage, showInFinder } from "@raycast/api";
+import {
+  ActionPanel,
+  Form,
+  Action,
+  LocalStorage,
+  showInFinder,
+  showToast,
+  Toast,
+  Alert,
+  confirmAlert,
+} from "@raycast/api";
 import fs from "fs";
 import { useEffect, useState } from "react";
 import { DefaultConfig, SystemConfig } from "./types";
@@ -45,11 +55,44 @@ export function Configs() {
               }
 
               const items = await LocalStorage.allItems<object>();
-              const file = path.join(folder, dayjs().format("YYYYMMDDHHmmss") + ".txt");
-              console.log(file, JSON.stringify(items));
+              const file1 = path.join(folder, "SimpleNote.bak");
+              const file2 = path.join(folder, "SimpleNote" + dayjs().format("YYYYMMDDHHmmss") + ".bak");
 
-              await fs.writeFileSync(file, JSON.stringify(items));
-              showInFinder(file);
+              const str = Buffer.from(JSON.stringify(items), "utf-8");
+              await fs.writeFileSync(file1, str);
+              fs.writeFileSync(file2, str);
+              showInFinder(file1);
+            }}
+          />
+          <Action.SubmitForm
+            title="Import From"
+            onSubmit={async (values) => {
+              const folder = values.folders[0];
+              const file1 = path.join(folder, "SimpleNote.bak");
+
+              if (!fs.existsSync(file1)) {
+                showToast({ title: "SimpleNote.bak not exist", style: Toast.Style.Failure });
+                return false;
+              }
+
+              const options: Alert.Options = {
+                title: "Import",
+                message: "Are you sure import notes? This action will override your notes and configs",
+                primaryAction: {
+                  title: "Import",
+                  onAction: async () => {
+                    const buff = fs.readFileSync(file1);
+                    const notes = JSON.parse(buff.toString("utf-8"));
+                    Object.keys(notes).forEach((x) => {
+                      LocalStorage.setItem(x, notes[x]);
+                    });
+
+                    initConfig();
+                    showToast({ title: "Import success" });
+                  },
+                },
+              };
+              await confirmAlert(options);
             }}
           />
         </ActionPanel>

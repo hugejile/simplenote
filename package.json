@@ -1,7 +1,7 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "simplenote",
-  "title": "SimpleNote",
+  "title": "Simple Note",
   "description": "Very simple local key value note.",
   "icon": "command-icon.png",
   "author": "hugejile_wang",
@@ -9,14 +9,20 @@
   "commands": [
     {
       "name": "index",
-      "title": "SimpleNote",
-      "description": "Show not list",
+      "title": "Simple Note - List",
+      "description": "Show note list",
+      "mode": "view"
+    },
+    {
+      "name": "edit",
+      "title": "Simple Note - Create",
+      "description": "Create a Note",
       "mode": "view"
     },
     {
       "name": "configs",
-      "title": "SimpleNote Config",
-      "description": "Show not list",
+      "title": "Simple Note - Config",
+      "description": "Config Simple Note",
       "mode": "view"
     }
   ],

@@ -1,20 +1,18 @@
 import { Action, ActionPanel, Detail, Icon, useNavigation } from "@raycast/api";
-import { ICreateNoteHandler, IDeleteNoteHandler, NoteContent } from "./types";
-import { desensitize, getNoteByKey } from "./utils";
+import { ICreateNoteHandler, NoteContent } from "./types";
+import { deleteNoteByKey, desensitize, getNoteByKey } from "./utils";
 import { useEffect, useState } from "react";
 import { Editor } from "./edit";
 
 interface DetailType {
   title: string;
   isDesensitize?: boolean;
-  handleSubmit: ICreateNoteHandler;
-  handleDelete: IDeleteNoteHandler;
+  afterSubmit: ICreateNoteHandler;
 }
 
 export function NoteDetails(props: DetailType) {
   const { pop, push } = useNavigation();
   const { title: key, isDesensitize } = props;
-  // const { note: { value: oValue, key } = { value: "", key: "" }, isDesensitize } = props;
 
   const [note, setNote] = useState<NoteContent>({ key: "", value: "" });
   const [value, setValue] = useState<string>("");
@@ -55,24 +53,15 @@ export function NoteDetails(props: DetailType) {
               icon={Icon.Document}
               title="Edit Note"
               shortcut={{ key: "e", modifiers: ["cmd"] }}
-              onAction={() =>
-                push(<Editor note={note} handleSubmit={props.handleSubmit} handleDelete={props.handleDelete} />)
-              }
+              onAction={() => push(<Editor note={note} afterSubmit={props.afterSubmit} />)}
             />
-            {/* <Action
-              icon={Icon.NewDocument}
-              title="New"
-              shortcut={{ key: "n", modifiers: ["cmd"] }}
-              onAction={() => push(<Editor handleSubmit={props.handleSubmit} handleDelete={props.handleDelete} />)}
-            /> */}
             <Action
               icon={Icon.DeleteDocument}
               title="Delete Note"
-              shortcut={{ key: "d", modifiers: ["cmd", "shift"] }}
-              onAction={() => {
-                props.handleDelete(key);
-                pop();
-                if (!isDesensitize) pop();
+              shortcut={{ key: "d", modifiers: ["cmd"] }}
+              onAction={async () => {
+                await deleteNoteByKey(key);
+                props.afterSubmit?.(note);
               }}
             />
           </ActionPanel.Section>
