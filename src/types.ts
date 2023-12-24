@@ -1,3 +1,6 @@
+import { homedir } from "os";
+import path from "path";
+
 export class NoteContent {
   public key!: string;
   public value!: string;
@@ -33,3 +36,15 @@ export interface ICreateNoteHandler {
 export interface IDeleteNoteHandler {
   (key: string): void;
 }
+
+export type SystemConfig = {
+  databaseCon: string;
+  databaseType: "file" | "sqlite";
+  desensitize: boolean;
+};
+
+export const DefaultConfig: SystemConfig = {
+  databaseCon: path.join(homedir(), "Downloads"),
+  databaseType: "file",
+  desensitize: true,
+};

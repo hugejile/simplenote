@@ -12,6 +12,12 @@
       "title": "SimpleNote",
       "description": "Show not list",
       "mode": "view"
+    },
+    {
+      "name": "configs",
+      "title": "SimpleNote Config",
+      "description": "Show not list",
+      "mode": "view"
     }
   ],
   "dependencies": {

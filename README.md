@@ -1,3 +1,3 @@
 # SimpleNote
 
-Save files
+Very simple key/value note, base on raycast LocationStorage Cache.

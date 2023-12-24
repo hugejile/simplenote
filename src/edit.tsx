@@ -78,3 +78,5 @@ export function Editor(props: {
     </Form>
   );
 }
+
+export default Editor;

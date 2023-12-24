@@ -5,6 +5,7 @@ import { NoteContent, State } from "./types";
 import { Editor } from "./edit";
 import { getKeys as getNoteKeys, updateDateByKey as createOrUpdateNote, getNoteByKey, deleteNoteByKey } from "./utils";
 import dayjs from "dayjs";
+import { Configs } from "./configs";
 
 export default function Index() {
   const [state, setState] = useState<State>({
@@ -86,11 +87,12 @@ export default function Index() {
                     shortcut={{ key: "n", modifiers: ["cmd"] }}
                     onAction={() => push(<Editor handleSubmit={handleSubmit} handleDelete={handleDelete} />)}
                   />
-                  <Action
-                    icon={Icon.DeleteDocument}
-                    title="Delete Note"
-                    shortcut={{ key: "d", modifiers: ["cmd", "shift"] }}
-                    onAction={() => handleDelete(note.key)}
+                  <Action icon={Icon.DeleteDocument} title="Delete Note" onAction={() => handleDelete(note.key)} />
+                  <Action.Push
+                    icon={Icon.Download}
+                    shortcut={{ key: "e", modifiers: ["cmd", "shift"] }}
+                    title="Export Notes"
+                    target={<Configs />}
                   />
                 </ActionPanel.Section>
               </ActionPanel>
