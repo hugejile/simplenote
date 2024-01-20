@@ -28,8 +28,8 @@ export default function Index() {
 
   async function start() {
     setState((previous) => ({ ...previous, isLoading: true }));
-    const notes = await getNoteKeys();
     const config = await getConfig();
+    const notes = await getNoteKeys(config.sort);
     setState((previous) => ({ ...previous, notes, config, isLoading: false }));
   }
 
@@ -85,17 +85,20 @@ export default function Index() {
                       Clipboard.paste(n.value);
                     }}
                   />
+                  <Action
+                    title="Copy To Clipboard"
+                    icon={Icon.CopyClipboard}
+                    shortcut={{ key: "enter", modifiers: ["cmd", "shift"] }}
+                    onAction={async () => {
+                      const n = await getNoteByKey(note.key);
+                      console.log("past note", n);
+                      Clipboard.copy(n.value, { concealed: true });
+                    }}
+                  />
                   {/* <Action.Paste content={note}></Action.Paste> */}
                   {/* <Action.CopyToClipboard content={note?.value}></Action.CopyToClipboard> */}
                 </ActionPanel.Section>
-
                 <ActionPanel.Section>
-                  <Action
-                    icon={Icon.NewDocument}
-                    title="New"
-                    shortcut={{ key: "n", modifiers: ["cmd"] }}
-                    onAction={() => push(<Editor afterSubmit={afterSubmit} />)}
-                  />
                   <Action
                     icon={Icon.DeleteDocument}
                     title="Delete Note"
@@ -104,6 +107,14 @@ export default function Index() {
                       await deleteNoteByKey(note.key);
                       start();
                     }}
+                  />
+                </ActionPanel.Section>
+                <ActionPanel.Section>
+                  <Action
+                    icon={Icon.NewDocument}
+                    title="New"
+                    shortcut={{ key: "n", modifiers: ["cmd"] }}
+                    onAction={() => push(<Editor afterSubmit={afterSubmit} />)}
                   />
                   <Action.Push
                     icon={Icon.Cog}

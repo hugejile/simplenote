@@ -1,5 +1,5 @@
 import { Alert, LocalStorage, confirmAlert } from "@raycast/api";
-import { DefaultConfig, NoteContent, NoteIndex, SystemConfig } from "./types";
+import { DefaultConfig, NoteContent, NoteIndex, Sort, SystemConfig } from "./types";
 
 export const CONFIG_FILE_NAME = "__CONFIG_FILE_NAME__";
 
@@ -17,7 +17,7 @@ export function desensitize(value: string) {
   }
 }
 
-export async function getKeys(): Promise<NoteIndex[]> {
+export async function getKeys(sort: Sort): Promise<NoteIndex[]> {
   const items = await LocalStorage.allItems<object>();
   const keys = Object.keys(items)
     .filter((x) => x !== CONFIG_FILE_NAME)
@@ -30,8 +30,19 @@ export async function getKeys(): Promise<NoteIndex[]> {
   // await new Promise((resolve) => setTimeout(resolve, 500));
 
   console.log(keys);
-  if (keys.length > 0) return keys.sort((x, y) => y.createTime - x.createTime);
-  else return [{ key: "Create Your First Note", createTime: 0 }];
+  if (keys.length > 0) {
+    switch (sort) {
+      case Sort.CreateTimeAsc:
+        return keys.sort((x, y) => x.createTime - y.createTime);
+      default:
+      case Sort.CreateTimeDesc:
+        return keys.sort((x, y) => y.createTime - x.createTime);
+      case Sort.AlphabetAsc:
+        return keys.sort((x, y) => (y.key < x.key ? 1 : -1));
+      case Sort.AlphabetDesc:
+        return keys.sort((x, y) => (y.key > x.key ? 1 : -1));
+    }
+  } else return [{ key: "Create Your First Note", createTime: 0 }];
 }
 
 export async function getNoteByKey(key: string): Promise<NoteContent> {

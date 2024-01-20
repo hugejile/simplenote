@@ -34,9 +34,16 @@ export function NoteDetails(props: DetailType) {
       markdown={value}
       actions={
         <ActionPanel>
-          <ActionPanel.Section>
+          <ActionPanel.Section title="Value">
             <Action.Paste content={note.value}></Action.Paste>
             <Action.CopyToClipboard content={note.value} concealed={true}></Action.CopyToClipboard>
+          </ActionPanel.Section>
+
+          <ActionPanel.Section title="Key">
+            <Action.Paste content={note.key} shortcut={{ key: "enter", modifiers: ["cmd", "shift"] }}></Action.Paste>
+          </ActionPanel.Section>
+
+          <ActionPanel.Section>
             <Action
               title={isDesensitize ? "View Original Value" : "View Desensitize Value"}
               icon={isDesensitize ? Icon.Eye : Icon.EyeDisabled}
@@ -48,7 +55,7 @@ export function NoteDetails(props: DetailType) {
             />
           </ActionPanel.Section>
 
-          <ActionPanel.Section>
+          <ActionPanel.Section title="Edit">
             <Action
               icon={Icon.Document}
               title="Edit Note"

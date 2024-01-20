@@ -8,10 +8,11 @@ import {
   Toast,
   Alert,
   confirmAlert,
+  Icon,
 } from "@raycast/api";
 import fs from "fs";
 import { useEffect, useState } from "react";
-import { DefaultConfig, SystemConfig } from "./types";
+import { DefaultConfig, Sort, SystemConfig } from "./types";
 import { getConfig, saveSystemConfig } from "./utils";
 import path from "path";
 import dayjs from "dayjs";
@@ -59,7 +60,7 @@ export function Configs() {
               const file2 = path.join(folder, "SimpleNote" + dayjs().format("YYYYMMDDHHmmss") + ".bak");
 
               const str = Buffer.from(JSON.stringify(items), "utf-8");
-              await fs.writeFileSync(file1, str);
+              fs.writeFileSync(file1, str);
               fs.writeFileSync(file2, str);
               showInFinder(file1);
             }}
@@ -102,7 +103,7 @@ export function Configs() {
         <>
           <Form.FilePicker
             id="folders"
-            title="Config Folder"
+            title="Data Folder"
             value={[state.config.databaseCon]}
             allowMultipleSelection={false}
             onChange={(value) => {
@@ -114,13 +115,35 @@ export function Configs() {
 
           <Form.Checkbox
             id="desensitize"
-            label="Desensitize Note Value"
+            label="View Note value is desensitized by default"
             value={state.config.desensitize}
             onChange={(value) =>
               setState((previous) => ({ ...previous, config: { ...state.config, desensitize: value } }))
             }
             title="Desensitization"
           />
+
+          <Form.Dropdown
+            id="sort"
+            value={state.config.sort}
+            title="Note Sorting"
+            onChange={(value: string) => {
+              // console.log("sort", value, Sort[value as keyof typeof Sort]);
+              setState((previous) => ({
+                ...previous,
+                config: { ...state.config, sort: value as Sort },
+              }));
+            }}
+          >
+            {Object.keys(Sort).map((x) => (
+              <Form.Dropdown.Item
+                key={x}
+                value={Sort[x as keyof typeof Sort]}
+                title={Sort[x as keyof typeof Sort]}
+                icon={Icon.Circle}
+              />
+            ))}
+          </Form.Dropdown>
         </>
       ) : (
         <></>

@@ -33,14 +33,23 @@ export interface IDeleteNoteHandler {
   (key: string): void;
 }
 
+export enum Sort {
+  CreateTimeAsc = "Create Time Asc",
+  CreateTimeDesc = "Create Time Desc",
+  AlphabetAsc = "Alphabet Asc",
+  AlphabetDesc = "Alphabet Desc",
+}
+
 export type SystemConfig = {
   databaseCon: string;
   databaseType: "file" | "sqlite";
   desensitize: boolean;
+  sort: Sort;
 };
 
 export const DefaultConfig: SystemConfig = {
   databaseCon: path.join(homedir(), "Downloads"),
   databaseType: "file",
   desensitize: true,
+  sort: Sort.CreateTimeDesc,
 };
