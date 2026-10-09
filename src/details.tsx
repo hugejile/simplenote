@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Detail, Icon, useNavigation } from "@raycast/api";
+import { Action, ActionPanel, Detail, Icon, useNavigation, Keyboard } from "@raycast/api";
 import { ICreateNoteHandler, NoteContent } from "./types";
 import { deleteNoteByKey, desensitize, getNoteByKey } from "./utils";
 import { useEffect, useState } from "react";
@@ -59,7 +59,7 @@ export function NoteDetails(props: DetailType) {
             <Action
               icon={Icon.Document}
               title="Edit Note"
-              shortcut={{ key: "e", modifiers: ["cmd"] }}
+              shortcut={Keyboard.Shortcut.Common.Edit}
               onAction={() => push(<Editor note={note} afterSubmit={props.afterSubmit} />)}
             />
             <Action
