@@ -48,7 +48,7 @@ export function Configs() {
       actions={
         <ActionPanel>
           <Action.SubmitForm
-            title="Export To Disk"
+            title="Export to Disk"
             onSubmit={async (values) => {
               const folder = values.folders[0];
               if (!fs.existsSync(folder) || !fs.lstatSync(folder).isDirectory()) {
@@ -66,7 +66,7 @@ export function Configs() {
             }}
           />
           <Action.SubmitForm
-            title="Import From"
+            title="Import from"
             onSubmit={async (values) => {
               const folder = values.folders[0];
               const file1 = path.join(folder, "SimpleNote.bak");
@@ -128,7 +128,6 @@ export function Configs() {
             value={state.config.sort}
             title="Note Sorting"
             onChange={(value: string) => {
-              // console.log("sort", value, Sort[value as keyof typeof Sort]);
               setState((previous) => ({
                 ...previous,
                 config: { ...state.config, sort: value as Sort },

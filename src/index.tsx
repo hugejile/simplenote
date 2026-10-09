@@ -1,4 +1,4 @@
-import { ActionPanel, List, Action, useNavigation, Icon, Clipboard } from "@raycast/api";
+import { ActionPanel, List, Action, useNavigation, Icon, Clipboard, Keyboard } from "@raycast/api";
 import { useCallback, useEffect, useState } from "react";
 import { NoteDetails } from "./details";
 import { DefaultConfig, NoteContent, NoteIndex, SystemConfig } from "./types";
@@ -42,15 +42,6 @@ export default function Index() {
     [state.notes, setState],
   );
 
-  // const handleDelete = useCallback(
-  //   async (key: string) => {
-  //     await deleteNoteByKey(key);
-  //     const newNotes = state.notes.filter((x) => x.key != key);
-  //     setState((previous) => ({ ...previous, notes: newNotes }));
-  //   },
-  //   [state.notes, setState],
-  // );
-
   return (
     <List isLoading={state.isLoading}>
       {state.notes.map((note, index) => {
@@ -77,7 +68,7 @@ export default function Index() {
                     }
                   />
                   <Action
-                    title="Paste In Active App"
+                    title="Paste in Active App"
                     icon={Icon.CopyClipboard}
                     onAction={async () => {
                       const n = await getNoteByKey(note.key);
@@ -86,7 +77,7 @@ export default function Index() {
                     }}
                   />
                   <Action
-                    title="Copy To Clipboard"
+                    title="Copy to Clipboard"
                     icon={Icon.CopyClipboard}
                     shortcut={{ key: "enter", modifiers: ["cmd", "shift"] }}
                     onAction={async () => {
@@ -95,8 +86,6 @@ export default function Index() {
                       Clipboard.copy(n.value, { concealed: true });
                     }}
                   />
-                  {/* <Action.Paste content={note}></Action.Paste> */}
-                  {/* <Action.CopyToClipboard content={note?.value}></Action.CopyToClipboard> */}
                 </ActionPanel.Section>
                 <ActionPanel.Section>
                   <Action
@@ -113,7 +102,7 @@ export default function Index() {
                   <Action
                     icon={Icon.NewDocument}
                     title="New"
-                    shortcut={{ key: "n", modifiers: ["cmd"] }}
+                    shortcut={Keyboard.Shortcut.Common.New}
                     onAction={() => push(<Editor afterSubmit={afterSubmit} />)}
                   />
                   <Action.Push
