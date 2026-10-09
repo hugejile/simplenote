@@ -1,4 +1,4 @@
-import { ActionPanel, List, Action, useNavigation, Icon, Clipboard } from "@raycast/api";
+import { ActionPanel, List, Action, useNavigation, Icon, Clipboard, Keyboard } from "@raycast/api";
 import { useCallback, useEffect, useState } from "react";
 import { NoteDetails } from "./details";
 import { DefaultConfig, NoteContent, NoteIndex, SystemConfig } from "./types";
@@ -77,7 +77,7 @@ export default function Index() {
                     }
                   />
                   <Action
-                    title="Paste In Active App"
+                    title="Paste in Active App"
                     icon={Icon.CopyClipboard}
                     onAction={async () => {
                       const n = await getNoteByKey(note.key);
@@ -86,9 +86,9 @@ export default function Index() {
                     }}
                   />
                   <Action
-                    title="Copy To Clipboard"
+                    title="Copy to Clipboard"
                     icon={Icon.CopyClipboard}
-                    shortcut={{ key: "enter", modifiers: ["cmd", "shift"] }}
+                    shortcut={Keyboard.Shortcut.Common.Copy}
                     onAction={async () => {
                       const n = await getNoteByKey(note.key);
                       console.log("past note", n);
@@ -102,7 +102,7 @@ export default function Index() {
                   <Action
                     icon={Icon.DeleteDocument}
                     title="Delete Note"
-                    shortcut={{ key: "d", modifiers: ["cmd"] }}
+                    shortcut={Keyboard.Shortcut.Common.Remove}
                     onAction={async () => {
                       await deleteNoteByKey(note.key);
                       start();
@@ -113,12 +113,15 @@ export default function Index() {
                   <Action
                     icon={Icon.NewDocument}
                     title="New"
-                    shortcut={{ key: "n", modifiers: ["cmd"] }}
+                    shortcut={Keyboard.Shortcut.Common.New}
                     onAction={() => push(<Editor afterSubmit={afterSubmit} />)}
                   />
                   <Action.Push
                     icon={Icon.Cog}
-                    shortcut={{ key: "e", modifiers: ["cmd", "shift"] }}
+                    shortcut={{
+                      macOS: { key: "e", modifiers: ["cmd", "shift"] },
+                      Windows: { key: "e", modifiers: ["ctrl", "shift"] },
+                    }}
                     title="Configs"
                     target={<Configs />}
                   />
